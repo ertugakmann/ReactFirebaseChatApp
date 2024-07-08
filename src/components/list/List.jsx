@@ -1,8 +1,15 @@
 import React from "react";
 import "../list/list.css";
+import UserInfo from "./UserInfo/UserInfo";
+import ChatList from "./ChatList/ChatList";
 
 function List() {
-  return <div className="list">List</div>;
+  return (
+    <div className="list">
+      <UserInfo />
+      <ChatList />
+    </div>
+  );
 }
 
 export default List;
