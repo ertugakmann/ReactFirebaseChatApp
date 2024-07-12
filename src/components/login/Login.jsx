@@ -2,12 +2,17 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./login.css";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../lib/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import upload from "../../lib/upload";
 
 function Login() {
   const [avatar, setAvatar] = useState({
     file: null,
     url: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleAvatar = (e) => {
     if (e.target.files[0]) {
@@ -21,7 +26,48 @@ function Login() {
   const handleLogin = (e) => {
     e.preventDefault();
 
-    toast.warn("");
+    toast.success("Successfully logged in!");
+  };
+
+  const handleRegister = async (e) => {
+    setLoading(true);
+    e.preventDefault();
+
+    toast.warn("Creating an account...");
+
+    const formData = new FormData(e.target);
+
+    const { username, email, password } = Object.fromEntries(formData);
+
+    try {
+      const response = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      const imgUrl = await upload(avatar.file);
+
+      await setDoc(doc(db, "users", response.user.uid), {
+        username,
+        email,
+        avatar: imgUrl,
+        id: response.user.uid,
+        blocked: [],
+      });
+
+      await setDoc(doc(db, "userchats", response.user.uid), {
+        chats: [],
+      });
+
+      toast.success("Account created successfully!");
+    } catch (err) {
+      console.log(err);
+
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -31,13 +77,13 @@ function Login() {
         <form onSubmit={handleLogin}>
           <input type="text" placeholder="Email" name="email" />
           <input type="password" placeholder="Password" name="password" />
-          <button>Sign In</button>
+          <button disabled={loading}>{loading ? "Loading" : "Sign In"}</button>
         </form>
       </div>
       <div className="seperator"></div>
       <div className="item">
         <h2>Create an Account</h2>
-        <form action="">
+        <form onSubmit={handleRegister}>
           <label htmlFor="file">
             <img src={avatar.url || "./avatar.png"} alt="" />
             Upload an Image
@@ -51,7 +97,7 @@ function Login() {
           <input type="text" placeholder="Username" name="username" />
           <input type="text" placeholder="Email" name="email" />
           <input type="password" placeholder="Password" name="password" />
-          <button>Sign Up</button>
+          <button disabled={loading}>{loading ? "Loading" : "Sign Up"}</button>
         </form>
       </div>
     </div>
