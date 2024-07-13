@@ -2,10 +2,14 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./login.css";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { auth, db } from "../../lib/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import upload from "../../lib/upload";
+import { setLogLevel } from "firebase/app";
 
 function Login() {
   const [avatar, setAvatar] = useState({
@@ -23,10 +27,21 @@ function Login() {
     }
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    toast.success("Successfully logged in!");
+    const formData = new FormData(e.target);
+    const { email, password } = Object.fromEntries(formData);
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      console.log(err);
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRegister = async (e) => {
