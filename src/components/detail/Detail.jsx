@@ -72,8 +72,8 @@ function Detail() {
           </div>
         </div>
         <div className="option">
+          <span>Shared Files</span>
           <div className="title">
-            <span>Shared Files</span>
             <img src="./arrowDown.png" alt="" />
           </div>
         </div>
